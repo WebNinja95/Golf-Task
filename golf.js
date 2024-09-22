@@ -5,7 +5,9 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-
+const PlayerRound = true;
+const cards_board = ['Face Down','Face Down','Face Down','Face Down'];
+const Discard_Pile = []
 const cards = {
     hearts: {
         "As hearts": 1,
@@ -73,24 +75,22 @@ const cards = {
     }
 };
 
-function CardsForPlayer(cards){
-    const NewCards = [];
-    for(let i = 0;i<5;i++){
-        const randomNumber = Math.floor(Math.random() * 5);
+function RandomCard(cards){
+    const randomNumber = Math.floor(Math.random() * 5);
         const randomNumberJoker = Math.floor(Math.random() * 1);
         const randomNumberCard = Math.floor(Math.random() * 13);
         if(randomNumber === 0){
             const hearts = cards.hearts;
             const keys = Object.keys(hearts);
             const card = keys[randomNumberCard];  
-            NewCards.push(card);
+            return card;
         
         }
         if(randomNumber === 1){
             const diamonds = cards.diamonds;
             const keys = Object.keys(diamonds);
             const card = keys[randomNumberCard];  
-            NewCards.push(card);
+            return card;
       
 
         }
@@ -98,7 +98,7 @@ function CardsForPlayer(cards){
             const clubs = cards.clubs;
             const keys = Object.keys(clubs);
             const card = keys[randomNumberCard];  
-            NewCards.push(card);
+            return card;
        
 
         }
@@ -106,7 +106,7 @@ function CardsForPlayer(cards){
             const spades = cards.spades;
             const keys = Object.keys(spades);
             const card = keys[randomNumberCard];  
-            NewCards.push(card);
+            return card;
        
 
         }
@@ -114,12 +114,18 @@ function CardsForPlayer(cards){
             const jokers = cards.jokers;
             const keys = Object.keys(jokers);
             const card = keys[randomNumberJoker];  
-            NewCards.push(card);
+            return card;
 
         }
+    
+}
+
+function CardsForPlayer(cards){
+    const NewCards = [];
+    for(let i = 0;i<4;i++){
+        NewCards.push(RandomCard(cards));
     }
     return NewCards;
-    
 }
 
 
@@ -140,6 +146,7 @@ function createPlayers(cards1,cards2) {
 
             console.log(`Players created: ${players[0].name} and ${players[1].name}`);
             rl.close();
+            Deck(players,cards_board,Discard_Pile,cards,PlayerRound);
         });
     });
     return players;
@@ -150,7 +157,7 @@ function Game(){
         console.log("Let's gooo!");
         rl.question("Are you ready to play? (y/n): ", function(answer) {
             if (answer.toLowerCase() === 'y') {
-                console.log('Lets create 2 players!!'); 
+                console.log('Lets create 2 players!!');
                 return createPlayers(CardsForPlayer(cards),CardsForPlayer(cards));
             } else {
                 exitGame(); 
@@ -164,9 +171,62 @@ function Game(){
     }
 }
 
-function Deck(){
+
+function Deck(players,cards_board,Discard_Pile,Deck,PlayerRound){
+    console.log('---Board---');
+    console.log(`${players[0].name} Hand:${cards_board} `);
+    console.log(`${players[1].name} Hand:${cards_board} `);
+    let check = true;
+    while(check){
+        const num = RandomCard(Deck);
+        if((players[0].cards.includes(num)) && (players[1].cards.includes(num))){
+            Discard_Pile.push(num);
+            check = false;
+        }
+    }
+    console.log(`Discard Pile Top Card:${Discard_Pile[Discard_Pile.length-1]}`);
+    if (PlayerRound) {
+        console.log(`${players[0].name} Turn!`);
+        rl.question('Type 1 to draw from Deck, or type 2 to take from Discard Pile: ', (answer) => {
+            if (answer === '1') {
+                console.log('You chose to draw from the Deck.');
+                // You can add your Deck drawing logic here without closing rl
+            } else if (answer === '2') {
+                console.log(`You take ${Discard_Pile[Discard_Pile.length - 1]}`);
+                rl.question('Choose which card (1-4) to replace: ', (answer) => {
+                    let temp;
+                    if (answer === '1') {
+                        temp = cards_board[0];
+                        cards_board[0] = Discard_Pile[Discard_Pile.length - 1];
+                    } else if (answer === '2') {
+                        temp = cards_board[1];
+                        cards_board[1] = Discard_Pile[Discard_Pile.length - 1];
+                    } else if (answer === '3') {
+                        temp = cards_board[2];
+                        cards_board[2] = Discard_Pile[Discard_Pile.length - 1];
+                    } else if (answer === '4') {
+                        temp = cards_board[3];
+                        cards_board[3] = Discard_Pile[Discard_Pile.length - 1];
+                    } else {
+                        console.log('Invalid input.');
+                        return;  // End this round without doing anything if invalid input
+                    }
     
+                    Discard_Pile.push(temp);  // Put the replaced card on top of the discard pile
+                    console.log(`Replacing ${temp} with ${cards_board[answer - 1]}`);
+                    
+                    // Next, you can add the logic for ending the player's turn, or calling another function.
+                });
+            } else {
+                console.log('Invalid input. Please type 1 or 2.');
+            }
+        });
+    }
+    
+    
+
 }
+
 
 const game = new Game();
 game.Start();
