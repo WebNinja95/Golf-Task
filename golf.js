@@ -190,32 +190,15 @@ function Deck(players,cards_board,Discard_Pile,Deck,PlayerRound){
         rl.question('Type 1 to draw from Deck, or type 2 to take from Discard Pile: ', (answer) => {
             if (answer === '1') {
                 console.log('You chose to draw from the Deck.');
-                // You can add your Deck drawing logic here without closing rl
             } else if (answer === '2') {
                 console.log(`You take ${Discard_Pile[Discard_Pile.length - 1]}`);
                 rl.question('Choose which card (1-4) to replace: ', (answer) => {
                     let temp;
-                    if (answer === '1') {
-                        temp = cards_board[0];
-                        cards_board[0] = Discard_Pile[Discard_Pile.length - 1];
-                    } else if (answer === '2') {
-                        temp = cards_board[1];
-                        cards_board[1] = Discard_Pile[Discard_Pile.length - 1];
-                    } else if (answer === '3') {
-                        temp = cards_board[2];
-                        cards_board[2] = Discard_Pile[Discard_Pile.length - 1];
-                    } else if (answer === '4') {
-                        temp = cards_board[3];
-                        cards_board[3] = Discard_Pile[Discard_Pile.length - 1];
-                    } else {
-                        console.log('Invalid input.');
-                        return;  // End this round without doing anything if invalid input
-                    }
-    
-                    Discard_Pile.push(temp);  // Put the replaced card on top of the discard pile
-                    console.log(`Replacing ${temp} with ${cards_board[answer - 1]}`);
+                    temp = cards_board[parseInt(answer,10)-1];
+                    cards_board[parseInt(answer,10)-1] = Discard_Pile[Discard_Pile.length - 1];
+                    Discard_Pile.push(temp); 
+                    console.log(`Replacing ${temp} with ${cards_board[parseInt(answer,10) - 1]}`);
                     
-                    // Next, you can add the logic for ending the player's turn, or calling another function.
                 });
             } else {
                 console.log('Invalid input. Please type 1 or 2.');
