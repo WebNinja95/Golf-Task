@@ -5,7 +5,7 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-const PlayerRound = true;
+
 const cards_board = ['Face Down','Face Down','Face Down','Face Down'];
 const Discard_Pile = []
 const cards = {
@@ -75,146 +75,57 @@ const cards = {
     }
 };
 
-function RandomCard(cards){
-    const randomNumber = Math.floor(Math.random() * 5);
-        const randomNumberJoker = Math.floor(Math.random() * 1);
-        const randomNumberCard = Math.floor(Math.random() * 13);
-        if(randomNumber === 0){
-            const hearts = cards.hearts;
-            const keys = Object.keys(hearts);
-            const card = keys[randomNumberCard];  
-            return card;
-        
+function shuffleDeck(cards) {
+    const deck = [];
+    for (let suit in cards) {
+        for (let card in cards[suit]) {
+            deck.push({ name: card, value: cards[suit][card] });
         }
-        if(randomNumber === 1){
-            const diamonds = cards.diamonds;
-            const keys = Object.keys(diamonds);
-            const card = keys[randomNumberCard];  
-            return card;
-      
-
-        }
-        if(randomNumber === 2){
-            const clubs = cards.clubs;
-            const keys = Object.keys(clubs);
-            const card = keys[randomNumberCard];  
-            return card;
-       
-
-        }
-        if(randomNumber === 3){
-            const spades = cards.spades;
-            const keys = Object.keys(spades);
-            const card = keys[randomNumberCard];  
-            return card;
-       
-
-        }
-        if(randomNumber === 4){
-            const jokers = cards.jokers;
-            const keys = Object.keys(jokers);
-            const card = keys[randomNumberJoker];  
-            return card;
-
-        }
-    
-}
-
-function CardsForPlayer(cards){
-    const NewCards = [];
-    for(let i = 0;i<4;i++){
-        NewCards.push(RandomCard(cards));
     }
-    return NewCards;
+
+    
+    for (let i = 0; i < deck.length; i++) {
+        const j = Math.floor(Math.random() * deck.length);
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+
+    return deck;  
 }
 
-
-
-function Player(name,cards) {
+function Player(name){
     this.name = name;
-    this.cards = cards;
+    this.cards = [];
 }
 
-function createPlayers(cards1,cards2) {
-    const players = [];
-
-    rl.question("Enter name for Player 1: ", (player1Name) => {
-        players.push(new Player(player1Name,cards1));
-
-        rl.question("Enter name for Player 2: ", (player2Name) => {
-            players.push(new Player(player2Name,cards2));
-
-            console.log(`Players created: ${players[0].name} and ${players[1].name}`);
-            rl.close();
-            Deck(players,cards_board,Discard_Pile,cards,PlayerRound);
-        });
+function dealCardsToPlayers(deck, players) {
+    const cardsToDeal = 4;  
+    players.forEach(player => {
+        for (let i = 0; i < cardsToDeal; i++) {
+            const dealtCard = deck.pop(); 
+            player.cards.push(dealtCard);
+        }
     });
-    return players;
+
+    console.log(`Deck after dealing: ${deck.length} cards left!`);
+    return deck;
 }
 
-function Game(){
-    this.Start = function(){
-        console.log("Let's gooo!");
-        rl.question("Are you ready to play? (y/n): ", function(answer) {
-            if (answer.toLowerCase() === 'y') {
-                console.log('Lets create 2 players!!');
-                return createPlayers(CardsForPlayer(cards),CardsForPlayer(cards));
-            } else {
-                exitGame(); 
-            }
+function CreatePlayersAndDeal() {
+    const players = [];
+    rl.question("Enter name for Player 1: ", (player1Name) => {
+        players.push(new Player(player1Name));
+        rl.question("Enter name for Player 2: ", (player2Name) => {
+            players.push(new Player(player2Name));
+            console.log(`Brilliant! Players created: ${players[0].name} and ${players[1].name}`);
+            let deck = shuffleDeck(cards);
+            deck = dealCardsToPlayers(deck, players);
+            console.log(`${players[0].name} has the following cards:`, players[0].cards);
+            console.log(`${players[1].name} has the following cards:`, players[1].cards);
+
             rl.close(); 
         });
-    }
-    this.exitGame = function(){
-        console.log('Ok,maybe next time..');
-        process.exit(0);
-    }
+    });
 }
 
 
-function Deck(players,cards_board,Discard_Pile,Deck,PlayerRound){
-    console.log('---Board---');
-    console.log(`${players[0].name} Hand:${cards_board} `);
-    console.log(`${players[1].name} Hand:${cards_board} `);
-    let check = true;
-    while(check){
-        const num = RandomCard(Deck);
-        if((players[0].cards.includes(num)) && (players[1].cards.includes(num))){
-            Discard_Pile.push(num);
-            check = false;
-        }
-    }
-    console.log(`Discard Pile Top Card:${Discard_Pile[Discard_Pile.length-1]}`);
-    if (PlayerRound) {
-        console.log(`${players[0].name} Turn!`);
-        rl.question('Type 1 to draw from Deck, or type 2 to take from Discard Pile: ', (answer) => {
-            if (answer === '1') {
-                console.log('You chose to draw from the Deck.');
-            } else if (answer === '2') {
-                console.log(`You take ${Discard_Pile[Discard_Pile.length - 1]}`);
-                rl.question('Choose which card (1-4) to replace: ', (answer) => {
-                    let temp;
-                    temp = cards_board[parseInt(answer,10)-1];
-                    cards_board[parseInt(answer,10)-1] = Discard_Pile[Discard_Pile.length - 1];
-                    Discard_Pile.push(temp); 
-                    console.log(`Replacing ${temp} with ${cards_board[parseInt(answer,10) - 1]}`);
-                    
-                });
-            } else {
-                console.log('Invalid input. Please type 1 or 2.');
-            }
-        });
-    }
-    
-    
-
-}
-
-
-const game = new Game();
-game.Start();
-
-
-
-
-
+CreatePlayersAndDeal();
