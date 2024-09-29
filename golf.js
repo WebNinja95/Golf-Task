@@ -116,7 +116,7 @@ function CreatePlayersAndDeal() {
 
     const players = [];
 
-   
+    
     rl.question("Enter name for Player 1: ", (player1Name) => {
         if (!player1Name.trim()) {  
             console.log("Player name cannot be empty.");
@@ -133,6 +133,11 @@ function CreatePlayersAndDeal() {
                     return askForPlayer2Name();  
                 }
 
+                if (player2Name === player1Name) {  
+                    console.log("Player 2 cannot have the same name as Player 1.");
+                    return askForPlayer2Name();  
+                }
+
                 players.push(new Player(player2Name));  
                 console.log(`Brilliant! Players created: ${players[0].name} and ${players[1].name}`);
 
@@ -143,7 +148,7 @@ function CreatePlayersAndDeal() {
             });
         }
 
-        askForPlayer2Name(); 
+        askForPlayer2Name();  
     });
 }
 
@@ -171,7 +176,7 @@ function FinalScore(players) {
     console.log(`${players[0].name} final score: ${player1Score}`);
     console.log(`${players[1].name} final score: ${player2Score}`);
 
-    if (player1Score > player2Score) {
+    if (player1Score < player2Score) {
         console.log(`The Winner is: ${players[0].name} with ${player1Score} points!`);
     } else {
         console.log(`The Winner is: ${players[1].name} with ${player2Score} points!`);
