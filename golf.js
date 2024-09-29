@@ -107,17 +107,43 @@ function dealCardsToPlayers(deck, players) {
 }
 
 function CreatePlayersAndDeal() {
+    for (let i = 0; i < PlayersBoard.length; i++) {
+        for (let j = 0; j < PlayersBoard[i].length; j++) {
+            PlayersBoard[i][j] = 'Face Down'; 
+        }
+    }
+    Discard_Pile.length = 0;
+
     const players = [];
+
+   
     rl.question("Enter name for Player 1: ", (player1Name) => {
-        players.push(new Player(player1Name));
-        rl.question("Enter name for Player 2: ", (player2Name) => {
-            players.push(new Player(player2Name));
-            console.log(`Brilliant! Players created: ${players[0].name} and ${players[1].name}`);
-            let deck = shuffleDeck(cards);
-            deck = dealCardsToPlayers(deck, players);
-            Discard_Pile.push(deck.pop());
-            StartGame(deck, Discard_Pile, players, PlayersBoard, 0);
-        });
+        if (!player1Name.trim()) {  
+            console.log("Player name cannot be empty.");
+            return CreatePlayersAndDeal();  
+        }
+
+        players.push(new Player(player1Name));  
+
+        
+        function askForPlayer2Name() {
+            rl.question("Enter name for Player 2: ", (player2Name) => {
+                if (!player2Name.trim()) {  
+                    console.log("Player name cannot be empty.");
+                    return askForPlayer2Name();  
+                }
+
+                players.push(new Player(player2Name));  
+                console.log(`Brilliant! Players created: ${players[0].name} and ${players[1].name}`);
+
+                let deck = shuffleDeck(cards);
+                deck = dealCardsToPlayers(deck, players);
+                Discard_Pile.push(deck.pop());  
+                StartGame(deck, Discard_Pile, players, PlayersBoard, 0);  
+            });
+        }
+
+        askForPlayer2Name(); 
     });
 }
 
@@ -135,61 +161,71 @@ function CheckFaceDown(PlayersBoard){
     return (ct1 === 4 || ct2 === 4);
 }
 
-function FinalScore(players){
-    let DuplicatCard = [];
-    let DuplicatCard2 = [];
-    let Player1Score = 0;
-    let Player2Score = 0;
-    for(let i = 0; i<4;i++){
-        const duplicat = players[0].cards[i];
-        const duplicat2 = players[1].cards[i];
-        for(let i=1; i<4;i++){
-            if(duplicat === players[0].cards[i]){
-                DuplicatCard.push(duplicat);
-            }
-            if(duplicat2 === players[1].cards[i]){
-                DuplicatCard2.push(duplicat2);
-            }
-        }
+function FinalScore(players) {
+    const player1Cards = players[0].cards;
+    const player2Cards = players[1].cards;
+
+    let player1Score = calculatePlayerScore(player1Cards);
+    let player2Score = calculatePlayerScore(player2Cards);
+
+    console.log(`${players[0].name} final score: ${player1Score}`);
+    console.log(`${players[1].name} final score: ${player2Score}`);
+
+    if (player1Score > player2Score) {
+        console.log(`The Winner is: ${players[0].name} with ${player1Score} points!`);
+    } else {
+        console.log(`The Winner is: ${players[1].name} with ${player2Score} points!`);
     }
-    for(let i =0; i<4;i++){
-        if(!DuplicatCard.includes(players[0].cards[i])){
-            Player1Score = Player1Score + CheckValue(players[0].cards[i])
-        }
-        if(!DuplicatCard.includes(players[1].cards[i])){
-            Player2Score = Player1Score + CheckValue(players[1].cards[i])
-        }
-    }
-    console.log(`${players[0].name} final score: ${Player1Score}`);
-    console.log(`${players[1].name} final score: ${Player2Score}`);
-    if(Player1Score > Player2Score){
-        console.log(`The Winner is : ${players[0].name} with ${Player1Score} points!!`);
-    }
-    else{
-        console.log(`The Winner is : ${players[1].name} with ${Player2Score} points!!`);
-    }
+
     rl.question("Do you want to play again? (Y/N): ", (answer) => {
         if (answer.toLowerCase() === 'y') {
             console.log("Restarting the game...");
-            CreatePlayersAndDeal();  
+            CreatePlayersAndDeal();
         } else {
             console.log("Thank you for playing!");
-            rl.close(); 
+            rl.close();
         }
     });
-    return true;
+}
+
+function calculatePlayerScore(cards) {
+    const cardValueCount = {}; 
+    let totalScore = 0;
+
+    
+    cards.forEach(card => {
+        const cardValue = CheckValue(card);  
+        if (cardValueCount[cardValue]) {
+            cardValueCount[cardValue]++;   
+        } else {
+            cardValueCount[cardValue] = 1; 
+        }
+    });
+
+    
+    cards.forEach(card => {
+        const cardValue = CheckValue(card);
+        if (cardValueCount[cardValue] === 1) {  
+            totalScore += cardValue;
+        }
+    });
+
+    return totalScore;
 }
 
 function StartGame(deck, Discard_Pile, players, PlayersBoard, PlayTurn){
-    console.log(`${players[0].name} Hands: ${PlayersBoard[0]}`);
-    console.log(`${players[1].name} Hands: ${PlayersBoard[1]}`);
+    
     const Check = CheckFaceDown(PlayersBoard);
     if(Check){
+        console.log(`${players[0].name} Hands: ${players[0].cards}`);
+        console.log(`${players[1].name} Hands: ${players[1].cards}`);
         return FinalScore(players);
     }
     if(PlayTurn > 1){
         PlayTurn = 0;
     }
+    console.log(`${players[0].name} Hands: ${PlayersBoard[0]}`);
+    console.log(`${players[1].name} Hands: ${PlayersBoard[1]}`);
     console.log(`Discard Pile: ${Discard_Pile[Discard_Pile.length-1]}`);
     GamePlay(deck, Discard_Pile, players, PlayersBoard, PlayTurn);
 }
