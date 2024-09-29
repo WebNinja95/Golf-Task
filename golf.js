@@ -103,8 +103,6 @@ function dealCardsToPlayers(deck, players) {
             player.cards.push(dealtCard);
         }
     });
-
-    console.log(`Deck after dealing: ${deck.length} cards left!`);
     return deck;
 }
 
@@ -117,8 +115,6 @@ function CreatePlayersAndDeal() {
             console.log(`Brilliant! Players created: ${players[0].name} and ${players[1].name}`);
             let deck = shuffleDeck(cards);
             deck = dealCardsToPlayers(deck, players);
-            console.log(`${players[0].name} created `);
-            console.log(`${players[1].name} created`);
             Discard_Pile.push(deck.pop());
             StartGame(deck, Discard_Pile, players, PlayersBoard, 0);
         });
@@ -140,15 +136,53 @@ function CheckFaceDown(PlayersBoard){
 }
 
 function FinalScore(players){
+    let DuplicatCard = [];
+    let DuplicatCard2 = [];
     let Player1Score = 0;
     let Player2Score = 0;
-    
+    for(let i = 0; i<4;i++){
+        const duplicat = players[0].cards[i];
+        const duplicat2 = players[1].cards[i];
+        for(let i=1; i<4;i++){
+            if(duplicat === players[0].cards[i]){
+                DuplicatCard.push(duplicat);
+            }
+            if(duplicat2 === players[1].cards[i]){
+                DuplicatCard2.push(duplicat2);
+            }
+        }
+    }
+    for(let i =0; i<4;i++){
+        if(!DuplicatCard.includes(players[0].cards[i])){
+            Player1Score = Player1Score + CheckValue(players[0].cards[i])
+        }
+        if(!DuplicatCard.includes(players[1].cards[i])){
+            Player2Score = Player1Score + CheckValue(players[1].cards[i])
+        }
+    }
     console.log(`${players[0].name} final score: ${Player1Score}`);
     console.log(`${players[1].name} final score: ${Player2Score}`);
+    if(Player1Score > Player2Score){
+        console.log(`The Winner is : ${players[0].name} with ${Player1Score} points!!`);
+    }
+    else{
+        console.log(`The Winner is : ${players[1].name} with ${Player2Score} points!!`);
+    }
+    rl.question("Do you want to play again? (Y/N): ", (answer) => {
+        if (answer.toLowerCase() === 'y') {
+            console.log("Restarting the game...");
+            CreatePlayersAndDeal();  
+        } else {
+            console.log("Thank you for playing!");
+            rl.close(); 
+        }
+    });
     return true;
 }
 
 function StartGame(deck, Discard_Pile, players, PlayersBoard, PlayTurn){
+    console.log(`${players[0].name} Hands: ${PlayersBoard[0]}`);
+    console.log(`${players[1].name} Hands: ${PlayersBoard[1]}`);
     const Check = CheckFaceDown(PlayersBoard);
     if(Check){
         return FinalScore(players);
@@ -156,8 +190,6 @@ function StartGame(deck, Discard_Pile, players, PlayersBoard, PlayTurn){
     if(PlayTurn > 1){
         PlayTurn = 0;
     }
-    console.log(`${players[0].name} Hands: ${PlayersBoard[0]}`);
-    console.log(`${players[1].name} Hands: ${PlayersBoard[1]}`);
     console.log(`Discard Pile: ${Discard_Pile[Discard_Pile.length-1]}`);
     GamePlay(deck, Discard_Pile, players, PlayersBoard, PlayTurn);
 }
@@ -203,5 +235,14 @@ function GamePlay(deck, Discard_Pile, players, PlayersBoard, PlayerTurn){
         }
     });
 }
+function CheckValue(cardName){
+    for (const suit in cards) {
+        if (cards[suit][cardName] !== undefined) {
+            return cards[suit][cardName];
+        }
+    }
+    return "Card not found";
+}
 
 CreatePlayersAndDeal();
+
